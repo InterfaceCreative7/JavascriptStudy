@@ -1,0 +1,227 @@
+[15]//1-4 변수복사비교// 기본형 데이터와 참조형 데이터 차이 확인
+
+var a = 10;//기본형 데이터, 변수 영역 빈공간 @1001확보, 식별자 a
+var b = a;
+
+변수영역 빈공간 @1002확보후 식별자 b지정,
+ @1001에 저장된 값 @1002에 대입 
+
+ //참조형 데이터 
+var obj1 = {c:10, d:'ddd'};
+
+(참조형 데이터인 객체에 대한 변수 선언 및 할당)
+변수영역>데이터영역빈공간>별도의 변수영역> 주소저장
+
+var obj2 = obj1;
+
+복사과정은 동일하나 데이터 할당 과정에서 차이가 있음
+>>  변수 복사 이후의 동작에 큰 차이 발생     
+
+(1) 객체 프로퍼티 변경시
+
+var a = 10;
+var b = a;
+
+var obj1 = {c:10, d:'ddd'};
+var obj2 = obj1;
+
+b = 15;//새 데이터 영역 활용, @1002 값이 @5004가 됨
+obj2.c = 20;
+20을 위한 새 데이터 영역@5005 활용,obj2.c에 값 @5005 대입
+
+수정을 하여도 변수 obj1, obj2는 같은 객체를 활용함.
+기본형은 주솟값을 복사하는 과정이 한 번, 참조형은 두 단계를 거침
+!! 기본형도 결국 주솟값을 참조한다
+
+(2) 객체 자체를 변경시 
+
+var a = 10;
+var b = a;
+
+var obj1 = {c:10, d:'ddd'};
+var obj2 = obj1;
+ 
+b = 15;
+obj2 = {c:20, d:'ddd'};//obj2에도 새로운 객체 할당
+메모리 데이터 영역의 새로운 공간에 새 객체가 저장되고 그 주소를 변수 영역의 
+obj2위치에 저장함
+!!참조형 데이터가 '가변값'이라고 설명할떄의 '가변'은 참조형 데이터 자체를 변경할 경우가 아니라 그 내부의 프로퍼티를 변경할 때만 성립함
+
+[20] 05 불면객체
+!! 참조형 데이터의 '가변'은 내부 프로퍼티를 변경할 때만 성립함
+값으로 전달받은 객체에 변경을 가하더라도 원본 객체는 변하지 않아야하는 경우
+>>불변객체
+
+//객체 가변성에 따른 문제 사례
+var user = {
+    name: 'Jaenam',
+    gender: 'male'
+};
+
+var changeName = function (user, newName){
+    var newUser = user;
+    newUser.name = newName;
+    return newUser;
+};
+
+var user2 = changeName(user, 'Jung');
+
+if(user !== user2){
+    console.log('wrong');
+}
+console.log(user.name, user2.name); //>> 두 변수가 동일하게 나옴 Jung Jung
+console.log(user==user2); //true
+>>정보의 변화를 감지해야한다면 고쳐야함
+
+var user = {
+    name: 'Jaenam',
+    gender: 'male'
+};
+
+var changeName = function (user, newName){
+    return{ 
+        name: newName,
+        gender: user.gender
+        };
+        
+};
+
+var user2 = changeName(user, 'Jung'); //하드코딩!>>활용이 다소불편
+
+if(user !== user2){
+    console.log('changed');
+}
+console.log(user.name, user2.name);//Jaenam Jung  
+console.log(user==user2); //false
+//changeName함수: 새로운 객체를 반환하도록 수정함
+
+//최종 수정본 활용함수
+>> 간단하지만 얕은 복사만을 수행한다 :: 약점
+내부의 변경이 필요할시 이 함수말고 다른 함수 사용가능하기 때문
+var copyObject = function(target){
+    var result = {};
+    for(var prop in target){
+        result[prop] = target[prop];
+    }
+    return result;
+}
+
+//최종수정본
+
+var user = {
+    name: 'Jaenam', gender: 'male'
+};
+var user2 = copyObject(user);
+user2.name = 'Jung';
+
+if(user !== user2){
+    console.log('changed');
+}
+console.log(user.name, user2.name);
+console.log(user === user2);
+
+[25] 얕은복사 & 깊은복사
+얕은복사 : 바로 아래 단계의 값만 복사
+깊은 복사 : 내부의 모든 값들을 하나하나 찾아서 전부 복사
+
+얕은복사를 수행한다 
+>> 중첩된 객체에서 참조형 데이터가 저장된 프로퍼티를 복사할 때 그 주솟값만 복사한다
+>> 해당 프로퍼티에 대해 원본과 사본이 모두 동일한 참조형 데이터 주소를 가리킴
+>> 사본을 바꾸면 원본도 바뀜!
+
+[26] 중첩된 객체에 대한 깊은 복사
+var user2 = copyObject(user);
+user2.urls = copyObject(user.urls);
+
+user.urls.protfolio = 'http://portfolio.com';
+console.log(user.urls.portfolio === user2.urls.portfolio);//false
+
+user2.urls.blog = '';
+console.log(user.urls.blog === user2.urls.blog);
+
+[27] 객체의 깊은 복사를 수행하는 범용 함수
+var copyObjectDeep = function(target){
+    var result = {};
+    if(typeof target === 'object' && target !== null){
+        for(var prop in target){
+            result[prop] = copyObjectDeep(target[prop]); 
+        }
+
+    } else{
+        result = target;
+    }
+    return result;
+};
+//[28]JSON을 활용한 간단한 깊은 복사도 있음
+
+[29] undefined && null
+undefined
+1 사용자가 명시적으로 지정하는 경우
+2 js엔진이 자동으로 부여하는 경우 - 3 cases
+
+  i 값X대입한 변수, 즉 데이터 영역의 메모리 주소를 지정하지 않은 식별자에 접근할떄
+  ii 객체 내부의 존재하지 않는 프로퍼티에 접근하려고 할 때
+  iii return문이 없거나 호출되지 않는 함수의 실행 결과
+
+  // i case
+  var a;
+  console.log(a);
+ //undefined과 배열
+ var arr1 = [];
+ arr1.length = 3;
+ console.log(arr1); //empty x 3
+
+ var arr2 = new Array(3);
+ console.log(arr2);//empty x 3
+
+ var arr3 = [undefined, undefined, undefined];
+ console.log(arr3);
+배열에 3개의 빈 요소를 확보했지만
+확보된 각 요소에는 문자 그대로 어떤 값도, 심지어 undefined도 할당돼 있지 않음을 의미
+! 비어있는 요소와 undefined를 할당한 요소는 출력 결과부터 다름
+비어있는 요소는 순회와 관련된 많은 배열 메서드들의 순회 대상에서 제외
+
+배열도 객체임을 생각하면 존재하지 않는 프로퍼티에 대해서 순회가 불가능한 것이 당연함.
+배열은 객체와 마찬가지로 트그정 인덱스에 값을 지정할 때 비로소 빈 공간을 확보하고
+인덱스를 이름으로 지정하고 데이터의 주솟값을 저장하는 등의 동작을 함
+>> 값이 지정되지 않은 인덱스는 '아직은 존재하지 않는 프로퍼티'에 지나지 않음
+
+1 사용자가 명시적으로 부여한 경우
+undefined 그 자체의 값, undefined가 비어있음을 의미하나, 하나의 값으로 동작하기 때문
+이때 프로퍼티나 배열의 요소는 고유의 키값으로 실존, 순회의 대상 가능
+
+2 js 엔진이 어쩔 수 없이 반환할 경우
+해당 프로퍼티 내지 배열의 키값(인덱스)가 존재안함을 의미
+값으로써 어딘가에 할당된 undefined는 실존하는 데이터지만, 
+js엔진이 반환해주는 undefined 문자 그대로 값이 없음을 나타냄
+
+**혼란을 피하는 방법>>둘중 하나를 사용 안하면됨
+= 직접 undefined를 할당하지 않는 방법
+= '비어있음'을 명시적으로 나타내고 싶을때, null 쓰기
+
+typeof null이 object임을 주의해야함.
+
+[33]:undefined ,null 비교
+var n = null;
+console.log(typeof n); //object
+
+console.log(n == undefined);//true
+console.log(n==null);//true
+
+console.log(n=== undefined); //false
+console.log(n=== null)// true
+!!연산자로는 null,undefined가 구분이 불가능함, 
+>> 일치 연산자(===)를 써야만 정확히 판별가능
+
+[34] 1-7: Chapter 1 Summary
+
+js data type: 기본형, 참조형
+변수, 식별자
+변수 선언시
+참조형 데이터를 할당하고자 할 경우
+- 할당 과정에서 기본형과 차이가 생긴 이유: 참조형 데이터가 여러 개의 프로퍼티를 모은 '그룹'이기 때문
+참조형 데이터를 불변값으로 사용할 경우
+-깊은 복사 & 라이브러리 활용
+없음을 나타내는 방법 : undefined & null
+-명시적 undefined 대입 지양 추천!
+
