@@ -1,0 +1,33 @@
+<불변 객체>
+불변 객체가 필요한 이유: 원본 객체는 보존되어야 하는 경우가 있기 때문
+=>함수가 값이 아니라 새로운 객체를 반환하도록 해야 한다(비효율적)
+=> 함수 안에 모든 프로퍼티를 복사하는 함수를 만들어야 한다(효율적!!!)
+
+var copyObject=()=>{
+  var result={};
+  for (var prop in target){
+  result[prop]=target[prop];
+  }
+  return result;
+ }
+ =>반복문으로 코드롤 더 효율적으로
+ 
+그럼에도 이는 "얕은 복사"로 한계가 존재하고 요새는 라이브러리를 만들어 불변 객체를 보관하는 편.
+다음 장에서 얕은 복사와 깊은 복사에 대해 알아보기로!
+
+<undefined와 null>
+undefined는 사용자가 어떤 값을 지정할 것이라 예상했는데 그렇게 하지 않을 경우 반환된다.
+1. 값을 대입하지 않은 변수에 접근할 때
+ex)var a;
+   console.log(a)
+
+2. 객체 내부의 존재하지 않는 프로퍼티에 접근
+obj={a:1}
+console.log(obj.b) //undefined
+
+3. return 문이 없거나 호출되지 않는 함수의 실행 결과
+var func=func(){};
+var c=func()
+console.log(c)
+
+그리고 더 많은 변수들이 있어 NULL 을 쓰는 것이 효율적이다. 
