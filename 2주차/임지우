@@ -1,0 +1,36 @@
+<실행 컨텍스트>- 코드가 어떤 순서로 흘러가는지 알아보자
+
+1. 실행 컨텍스트란?
+- JS는 스택 구조로 쌓인다. 선입후출 구조임.
+-스택에 쌓이는 것을 컨텍스트라 칭하고 이 컨텍스트에는 
+variableEnvironment,LexicalEnvironment,ThisBinding이 있다. 
+하나씩 알아보기로..
+
+2.variableEnvironment
+-실행 컨텍스트 실행 시 정보가 담김. 컨텍스트 내 식별자들에 대한 정보,외부 환경 정보
+등 초기 조건이 담긴다. Lexical과 비슷하므로 이하 생략
+
+3.LexicalEnvironment
+environmentRecord는 코드의 식별자 정보들이 저장된다.
+코드가 실행되기 전에 진행된다. 호이스팅과 식별자 유효범위가 있음.
+
+** 호이스팅 과정
+<원본 코드>
+
+console.log(sum(1,2));
+console.log((multiply(3,4)));
+
+function sum(a,b){
+    return a+b;
+}
+
+var multiply=function(a,b){
+    return a*b;
+}
+
+코드가 동작할 때 함수 선언문(sum)은 전체를 호이스팅 하고 함수 표현식(multiply)은
+변수 선언부만 호이스팅한다.
+따라서 sum 함수 전체와 선언부 multiply만 호이스팅 된다. 변수만 기억한다고 이해하면 될 것 같다. 따라서 multiply 내부는 
+호이스팅 되지 않아 console 되지 않고 sum 함수만 실행된다. 
+
+
