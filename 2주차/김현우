@@ -1,0 +1,346 @@
+1-1. 실행 컨텍스트
+
+   
+
+    오버플로우: 데이터가 넘칠 때 나타나는 현상
+
+    
+
+    실행 컨텍스트란 실행할 코드에 제공할 환경 정보들을 모아놓은 객체이다.
+
+    
+
+    동일한 환경에 있는 코드들을 실행할 때 필요한 환경 정보들을 모아 컨텍스트를 구성하고
+
+    콜스택에 쌓아올렸다가 가장 위에 쌓여있는 컨텍스트와 관련 코드들을
+
+    실행하는 식으로 전체 코드의 환경과 순서를 보장.
+
+    
+
+    '동일한 환경'이란, 하나의 실행 컨텍스트를 구성할 수 있는 방법.
+
+    자동으로 생성되는 전역공간, eval()함수와 우리가 흔히 하는 함수 등이 있다.
+
+    
+
+1-2. 콜 스택
+
+    //-----------(1)
+
+    var a = 1;
+
+    function outer(){
+
+        function inner(){
+
+            console.log(a); // undefined
+
+            var a = 3;
+
+        }
+
+        inner(); //-------------(2)
+
+        console.log(a); // 1
+
+    }
+
+    outer(); //--------------(3)
+
+    console.log(a); // 1
+
+   
+
+    자바스크립트 코드를 실행하는 순간(1) 전역 컨텍스트가 콜 스택에 담긴다.
+
+    최상단 공간은 실행 명령이 없어도 브라우저에서 자동으로 실행하므로
+
+    js파일이 열리는 순간 전역 컨텍스트가 활성화 된다.
+
+    
+
+    콜 스택에 전역 컨텍스트 외 다른 덩어리가 없으므로 전역 컨텍스트와 관련된 코드들을 순차로 진행하다가
+
+    (3)에서 outer 함수를 호출하면 js엔진은 outer에 대한 환경 정보를 수집해서
+
+    outer 실행 컨텍스트를 생성 후 콜 스택에 담는다.
+
+    
+
+    콜 스택 맨 위에 outer 실행 컨텍스트가 놓인 상태이므로 전역 컨텍스트와 관련된 코드
+
+    실행을 중단하고 outer 실행 컨텍스트와 관련된 코드, outer 함수 내부위 코드들을 순차로 실행한다.
+
+    (2)에서 inner 함수의 실행 컨텍스트가 콜 스택 맨 위에 담기면 outer 컨텍스트
+
+    실행을 중단하고 inner 함수 내부의 코드들을 순서대로 진행.
+
+    inner 함수 내부에서 a 변수에 값 3을 할당하고 나면 inner 함수의 실행이 종료되고
+
+    inner 실행 컨텍스트가 콜 스택에서 제거된다.
+
+    
+
+    그러면 outer 컨텍스트가 콜 스택 맨 위에 놓이게 되므로 중단했던 (2)의 다음 줄부터
+
+    이어서 실행한다. a 변수 값을 출력하고 outer 함수의 실행이 종료되고 콜 스택에서 제거.
+
+    
+
+    (3)의 다음줄부터 이어서 실행하고 a 변수 값을 출력하고 나면 전역 공간에 실행할 코드가
+
+    남지 않아 전역 컨텍스트도 제거되고 콜 스택에는 아무것도 남지 않은 상태로 종료된다.
+
+    
+
+    어떤 실행 컨텍스트가 활성화될 때 js엔진은 해당 컨텍스트와 관련된 코드들을 실행하는 데 필요한
+
+    환경 정보들을 수집해서 실행 컨텍스트 객체에 저장한다.
+
+    i) VariableEnvironment
+
+    ii) LexicalEnvironment
+
+    iii) ThisBinding
+
+ 
+
+2. VariableEnvironment
+
+   
+
+    VariableEnvironment에 담기는 내용은 LexicalEnvironment와 같지만 최초 실행 시의
+
+    스냅샷을 유지하는 점이 다르다. 실행 컨텍스트를 생성할 때 VariableEnvironment에 정보를
+
+    담은 후 복사해서 LexicalEnvironment를 만들고 이를 활용한다.
+
+    VariableEnvironment와 LexicalEnvironment의 내부는 environmentrecord 와
+
+    outer-environmentRefence로 구성된다.
+
+ 
+
+3. LexicalEnvironment
+
+    
+
+    LexicalEnvironment는 '어휘적 환경','정적 환경'이라고 불리지만 '사전적 환경'이라고 이해할
+
+    수 있다.
+
+ 
+
+4. environmentRecord와 hoisting
+
+   
+
+    environmentRecord에는 현재 컨텍스트와 관련된 코드의 식별자 정보들이 저장된다.
+
+    컨텍스트 내부 전체를 처음부터 끝까지 훑으면서 순서대로,
+
+    컨텍스트를 구성하는 함수에 지정된 매겨변수 식별자, 선언한 함수가 있을 경우 그 함수 자체,
+
+    var로 선언된 변수의 식별자 등을 수집한다.
+
+    
+
+    코드가 실행되기 전임에도 js엔진은 이미 해당 환경에 속한 코드의 변수명을 알고 있게 된다.
+
+    식별자들을 최상단에 끌어올려놓은 것과 마찬가지라고 생각하면 된다(hoisting).
+
+    
+
+    function a(x){ // 수집 대상1(매개변수)
+
+        console.log(x); //(1)
+
+        var x; // 수집 대상2(변수 선언)
+
+        console.log(x); //(2)
+
+        var x = 2; //수집 대상3(변수 선언)
+
+        console.log(x);// (3)
+
+    }
+
+    a(1)
+
+    
+
+    위의 동작을 살펴보면 arguments에 전달된 인자를 담는 것을 제외하면
+
+    
+
+    function a(){
+
+        var x = 1;
+
+        console.log(x);
+
+        var x;
+
+        console.log(x);
+
+        var x = 2;
+
+        console.log(x);
+
+    }
+
+    a();
+
+    
+
+    이것과 다를 바가 없게 된다.
+
+    hoisting을 처리해보면, environmentRecord는 현재 실행될 컨텍스트의 대상 코드
+
+    내에 어떤 식별자들이 있는 지에만 관심이 있고 어떤 값이 할당되는지에는 관심이 없다.
+
+    
+
+    environmentRecord의 관심사에 맞춰 형태를 바꾸면,
+
+    
+
+    var x;
+
+    var x;
+
+    var x;
+
+    
+
+    x = 1;
+
+    console.log(x);
+
+    console.log(x);
+
+    x = 2;
+
+    console.log(x);
+
+    
+
+    hoisting 개념을 모르는 상태로 예상한 결과는 (1)1, (2)undefined, (3)2
+
+    실제로는 (1)1, (2)1, (3)2 라는 결과가 나왔다.
+
+    
+
+    function a(){
+
+        console.log(b);
+
+        var b = 'bbb';
+
+        console.log(b);
+
+        function b(){}
+
+        console.log(b);
+
+    }
+
+    a();
+
+    를 hoisting과 함수 선언문은 함수명으로 선언한 변수에 함수를 할당한 것으로 여길 수 있기 때문에
+
+    편의를 위해 바꾸면
+
+    
+
+    function a(){
+
+        var b;
+
+        var b = function b(){};
+
+        
+
+        console.log(b);
+
+        b = 'bbb';
+
+        console.log(b);
+
+        console.log(b);
+
+        
+
+    }
+
+    a();
+
+    hoisting 개념을 모르는 상태로 예상한 결과는 (1) error or undefined, (2)'bbb', (3)b함수
+
+    실제로는 (1)b함수, (2)'bbb', (3)'bbb' 라는 결과가 나왔다.
+
+ 
+
+5. 함수 선언문과 함수 표현식
+
+    함수 선언문은 function 정의부만 존재하고, 할당 명령 x, 반드시 함수명 정의
+
+    함수 표현식은 정의한 function을 별도의 변수에 할당, 함수명을 정의할 경우 '기명 함수 표현식'
+
+    그렇지 않은 경우 '익명 함수 표현식'이라 한다.
+
+    // 기명 함수 표현식의 경우 외부에서 호출 x
+
+    
+
+    console.log(sum(1,2));
+
+    console.log(multiply(3,4));
+
+    
+
+    function sum(a,b){
+
+        return a+b;
+
+    }
+
+    var multiply = function(a,b){
+
+        return a*b;
+
+    }
+
+    를 hoisting한 결과,
+
+    
+
+    var sum = function sum (a,b){
+
+        return a+b;
+
+    };
+
+    
+
+    var multiply;
+
+    console.log(sum(1,2));
+
+    console.log(multiply(3,4)); // 'multiply is not a function' error
+
+    
+
+    multiply = function(a,b){
+
+        return a*b;
+
+    }
+
+    
+
+    함수 선언문의 경우 중복 선언의 경우 치명적이지만 함수 표현식의 경우 중복 선언 전후로
+
+    의도대로 실행하기 때문에 상대적으로 안전한다.
+    
