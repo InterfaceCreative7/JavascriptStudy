@@ -1,0 +1,63 @@
+3.this
+자바스크립트에서 this는 클래스 외에도 사용이 가능하다.
+
+<상황에 따라 달라지는 this>
+
+<3.1>전역 공간에서 this 의미
+this는 전역 객체를 가리킨다
+
+<3-1-2>메서드로서 호출할 때 그 메서드 내부에서 this
+
+함수vs메서드
+함수: 그 자체로 독립적인 기능을 수행
+메서드: 자신을 호출한 대상 객체에 관한 동작. 호출해야 동작하기 때문에 함수와 달리 독립적이지 않음.
+
+함수로의 호출:func(1); //Window{...}
+메서드로 호출: obj.method(2); //{method:f}
+
+메서드 내부에서의 this 
+=>호출한 주체에 대한 정보가 담긴다
+
+var obj={
+    methodA:function(){console.log(this);},
+    inner:{
+        methodB:function(){console.log(this)}
+    }
+}
+obj.methodA(); //{methodA:f,inner:{...}} =>methodA에 관한 정보가 출력된다.
+
+
+함수 내부에서의 this: 전역객체를 가리킨다
+var obj1={
+    outer:function(){
+        console.log(this) //obj1 출력
+
+        var innerFunc=function(){
+            console.log(this); //전역객체(Window)
+        }
+        
+        innterFunc();
+
+        var obj2={
+            innterMEthod:innerFunc
+        };
+        obj2.innerMethod(); //obj2 출력
+    }
+}
+
+obj1.outer();
+첫번째 innterFunc()을 호출했을 때 함수로 호출했고 두번째 innerFunc는 메서드로서 호출=>출력이 달라진다
+=>해당 함수를 호출하는 구문 앞에서 점 또는 대괄호 표기가 있는지 없는지가 관건
+
+=>상황에 따라 this가 달라지면 this의 효용성이 없다. 변수를 사용하여 혼란을 막는다. 
+var self=this;
+var innerFunc2=function(){
+    console.log(self);
+}
+
+또는 ES6부터 arrow function을 사용하여 내부에서 this 바인딩 과정이 빠진다
+
+<3-1-4> 콜백 함수 호출 시 그 함수 내부에서의 this
+대상이 될 this 를 지정하지 않으면 전역객체 참조
+this를 지정하면 객체 정보 출력
+=>그때그때 다르다
