@@ -1,0 +1,114 @@
+Chapter 3
+<01> 
+@ this : 어디에서나 사용할 수 있다.
+        상황에 따라 this가 바라보는 대상이 달라진다. 어떤 이유로 그렇게 되는지 파악하기 힘든 경우도 있고 예상과 다르게 엉뚱한 대상을 바라보는 경우도 있는데 이런 경우에 문제를 해결하기 위해 정확한 작동방식을 알아야한다.
+        + 함수와 객체(메서드)를 구분하는 유일한 기능
+
+* this : 실행 컨텍스트가 생성될 때 함께 결정됨 (함수가 호출할 때 결정됨)
+    => 함수를 어떤 방식으로 호출하느냐에 따라 값이 달라진다.
+    ** "전역공간에서의 this" : 전역 객체를 가리킴
+        ex) 브라우저 환경에서 전역개체 : window / Node.js 환경에서의 전역객체 : global
+        # console.log(this);
+        # console.log(window);
+        # console.log(this === window); // true
+
+        + 전역 공간에서만 발생하는 특이한 성질
+        # var a = 1;
+        # console.log(a);   // 1
+        # console.log(window.a);    // 1
+        # console.log(this.a);  // 1
+            -> 전역 공간에서의 this는 전역객체를 의미하므로 두 값이 같은 값을 출력하는 것은 당연하지만 그 값이 왜 '1'일까?
+                    => 자바스크립트의 모든 변수는 특정 객체의 프로퍼티로서 동작하기 때문 => var 연산자를 이용하여 변수를 선언하더라도 어떤 특정 객체의 프로퍼티로 인식
+            (1) '전역 공간에서는 var로 변수를 선언하는 대신 window의 프로퍼티에 직접 할당하더라도 var로 선언한 것과 똑같이 동작'
+            # var a = 1;
+            # window.b = 2;
+            # console.log(a, window.a, this.a); // 1,1,1
+            # console.log(b, window.b, this.b); // 2,2,2
+            (2) '삭제' 명령 : 전역변수 선언과 전역객체의 프로퍼티 할당 사이에 전혀 다른 경우
+            # var a = 1;
+            # delete window.a;  // false
+            # console.log(a, window.a, this.a); // 1,1,1
+
+            # var b = 2;
+            # delete b;  // false
+            # console.log(b, window.b, this.b); // 2,2,2
+
+            # window.c = 3;
+            # delete window.c;  // true
+            # console.log(c, window.c, this.c); // c를 찾을 수 없음
+
+            # window.d = 4;
+            # delete d;  // true
+            # console.log(d, window.d, this.d); // d를 찾을 수 없음
+                => 처음부터 전역객체의 프로퍼티로 할당한 경우 삭제됨 but, 전역 변수로 선언한 경우에는 삭제 X // 사용자가 의도치 않게 삭제하는 것을 방지
+    
+    ** "메서드로서 호출할 때 this" : 미리 정의한 동작을 수행
+        : 어떤 함수를 객체의 프로퍼티에 할당한다고 해서 무조건 메서드가 되는 것이 아니라 객체의 메서드로서 호출할 경우에만 메서드로 동작
+        # var func = function (x) { console.log(this.x); }; // func라는 변수에 익명함수 할당
+        # func(1);  // func 호출 후 this로 전역객체 Window 출력
+
+        # var.obj = { method: func };    // obj라는 변수에 객체 할당 -> 그 객체의 method 프로퍼티에 func 함수 할당
+        # obj.method(2);    // obj의 method 호출 => obj의 method 프로퍼티에 할당한 값과 func 변수에 할당한 값은 모두 function(x) 참조
+            => 익명함수는 그대로인데 이를 변수에 담아 호출한 경우, obj 객체의 프로퍼티에 할당해서 호출한 경우에 'this가 달라짐'
+        *** 그 메서드 내부에서의 this 
+            : 어떤 함수를 메서드로서 호출하는 경우 호출 주체는 바로 함수명(프로퍼티명) 앞의 객체이다.
+            var obj = {
+                methodA: function () { console.log(this) },
+                inner: {
+                    methodB: function () {console.log(this) }
+                }
+            };
+            obj.methodA();  // { methodA: f, inner: {} }    ( === obj)
+            obj['methodA']();   // { methodA: f, inner: {} }    ( === obj)
+
+            obj.inner.methodB();    //// { methodB: f }    ( === obj.inner )
+            obj.inner['methodB']();    //// { methodB: f }    ( === obj.inner )
+            obj['inner'].methodB();    //// { methodB: f }    ( === obj.inner )
+            obj['inner']['methodB']();    //// { methodB: f }    ( === obj.inner )
+
+
+    ** "함수로서 호출할 때 this" 
+        : 어떤 함수를 함수로서 호출할 경우에는 this가 지정되지 않음, 호출 주체를 명시하지 않고 개발자가 직접 관여해서 실행한 것이기 때문에 호출 주체의 정보를 알 수 없음.
+        *** 그 메서드 내부에서의 this 
+            var obj1 = {
+                outer: function () {
+                    console.log(this);
+                    var innerFunc = function () {
+                        console.log(this);  
+                    }
+                    innerFunc();
+
+                    var obj2 = {
+                        innerMethod: innerFunc
+                    };
+                    obj2.innerMethod();
+                }
+            };
+            obj1.outer();
+            => 같은 함수임에도 7번째 줄에 의해 바인딩되는 this와 12번째 줄에 의해 바인딩되는 this의 대상이 달라짐
+        *** 메서드의 내부 함수에서의 this를 우회하는 방법
+            호출 주체가 없을 때 자동으로 전역객체를 바인딩하지 않고 호출 당시 주변 환경의 this를 그대로 상속받아 사용할 수 있다면 얼마나 좋을까?
+            아쉽게도 ES5까지는 자체적으로 내부함수에 this를 상속할 방법이 없다 but, '변수'를 활용하면 우회할 수 있다.  
+        *** this를 바인딩하지 않는 함수
+            ES6에서는 함수 내부에서 this가 전역객체를 바라보는 문제를 보완하고자 this를 바인딩하지 않는 '화살표 함수'를 도입
+            화살표 함수는 실행 컨텍스트를 생성할 때 this 바인딩 과정 자체가 빠지게 되어 상위 스코프의 this를 그대로 활용 가능 => 우회법이 불필요해짐
+
+    ** '콜백 함수 호출시 그 함수 내부에서의 this'
+        @ 콜백 함수 : 함수 A의 제어권을 다른 함수 B에게 넘겨주는 경우의 '함수 A'
+                    함수 A는 함수 B의 내부 로직에 따라 실행됨
+                    this도 함수 B 내부 로직에서 정한 규칙에 따라 값이 결정됨.
+    
+    ** '생성자 함수 내부에서의 this'
+        @ 생성자 함수 : 어떤 공통된 성질을 지니는 객체들을 생성하는 데 사용하는 함수
+        객체지향 언어에서는 생성자를 클래스, 클래스를 통해 만든 객체를 인스턴스라고 한다.
+
+
+        + 함수와 메서드의 차이 
+            - 함수 : 그 자체로 독립적인 기능 수행
+            - 메서드 : 자신을 호출한 대상 객체에 관한 동작 수행
+            * 어떻게 구분할까? 
+                (1) 함수 앞에 점(.)이 있는지 여부만으로 간단하게 구분 가능
+                    func(1); // 함수로서 호출
+                    obj.method(2);  // 메서드로서 호출
+                (2) 대괄호 표기법
+                    obj['method'](2); //{method: f } 2
