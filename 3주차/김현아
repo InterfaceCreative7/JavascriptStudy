@@ -53,8 +53,8 @@ Chapter 3
         *** 그 메서드 내부에서의 this 
             : 어떤 함수를 메서드로서 호출하는 경우 호출 주체는 바로 함수명(프로퍼티명) 앞의 객체이다.
             var obj = {
-                methodA: function () { console.log(this) },
-                inner: {
+                methodA: function () { console.log(this) },  
+                    inner: {
                     methodB: function () {console.log(this) }
                 }
             };
