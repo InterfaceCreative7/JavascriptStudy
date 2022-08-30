@@ -1,0 +1,157 @@
+3주차 숙제 [80]
+[80]3-2 명시적으로 this 바인딩 방법
+
+3-2-1 call 메서드
+call 메서드: 메서드의 호출 주체인 함수 즉시 실행하도록 하는 명령
+call메서드의 첫 번째 인자를 this로 바인딩, 이후의 인자들을 호출할 함수의 매개변수로 삼음
+call 메서드 이용시 임의의 객체를 this로 지정가능
+
+call 메서드 이용시, 임의의 객체를 this로 지정가능
+예제 3-15: call 메서드
+var obj = {
+    a:1,
+    method: function(x,y){
+        console.log(this.a, x, y);
+    } 
+};
+
+obj.method(2,3); // 1 2 3
+obj.method.call({a:4},5,6); // 4 5 6
+
+[81]3-2-2: apply 메서드
+
+apply 메서드는 메서드 호출주체인 함수를 즉시 실행하도록 명령함.
+call 메서드와 달리 apply 메서드는 두 번째 인자를 배열로 받아 그 배열의 요소들을 호출할 함수의 매개변수로 지정한다.
+
+예제 3-16 apply 메서드
+var func = function (a,b,c){
+    console.log(this,a,b,c);
+};
+func.apply({x:1},[4,5,6]); //{x:1} 4 5 6
+
+var obj = {
+    a:1,
+    method: function(x,y){
+        console.log(this.a, x, y);
+    }
+};
+obj.method.apply({a:4}, [5,6]); // 4 5 6
+
+
+[82] call/apply 메서드 활용
+
+1 유사배열객체에 배열 메서드 적용
+
+예제 3-17 call/apply 메서드의 활용 ,, 유사배열객체에 적용
+var obj = {
+    0: 'a',
+    1: 'b',
+    2: 'c',
+    length: 3
+};
+Array.prototype.push.call(obj,'d');
+console.log(obj); // {0:'a', 1:'b',2:'c',3:'d', length: 4}
+
+var arr = Array.prototype.slice.call(obj);
+console.log(arr); //['a','b','c','d']
+
+객체에는 배열 메서드를 직접 적용 불가.
+키가 0또는 양의 정수인 프로퍼티가 존재하고 length 프로퍼티의 값이 0또는 양의 정수인 객체, 
+배열의 구조와 유사한 객체의 경우 call Ehsms apply 메서드를 통해 배열 메서드를 차용 가능.
+
+call 메서드를 이용해 원본인 유사배열객체의 얕은 복사를 수행한 것인데, slice 메서드가 배열 메서드이기 때문에
+복사본은 배열로 반환하게 된것. 위 방법은 arguments 객체, querySelectorAll, getElementsByClassName 등의 Node 선택자로 선택한 결과인 NodeList도 마찬가지로
+
+유사배열객체에 call/apply 메서드를 이용해 모든 배열 메서드를 적용할 수 있음.
+배열처럼 인덱스와 length ㅍ로퍼티를 지니는 문자열에 대해서도 마찬가지
+단 문자열의 경우 length 프로퍼티가 읽기 전용이기에, 원본문자열에 변경을 가하는 메서드는 에러를 던지고
+대상이 반드시 배열이어야 하는 경우 에러가 안 나지만 제대로된 결과를 얻을 수 없음.
+
+사실 call/apply 메서드를 이용해 형변환하는 것은 this를 원하는 값으로 지정해서 호출한다 라는 본래의 메서드의 의도와 동떨어진 활용법임.
+slice 메서드는 오직 배열 형태로 '복사'하기 위히 차용됐을 뿐이라 의도 파악하기 쉽지않음
+ES6에서는 유사배열객체 또는 순회 가능한 모든 종류의 데이터 타입을 배열로 전환하는 Array.from메서드를 새로 도입함.
+ 
+2  생성자 내부에서 다른 생성자를 호출
+
+생성자 내부에 다른 생성자와 공통된 내용이 있을 경우 call 또는 apply를 이용ㅇ해 다른 생성자를 호출하면 간단하게 반복줄이기 가능
+
+3  여러 인수를 묶어 하나의 배열로 전달하고 싶을 때 - apply 활용
+여러 개의 인수를 받는 메서드에게 하나의 배열로 인수들을 전달하고 싶을 떄 apply메서드 사용하면 좋음. 
+코드가 불필요하고 가독성이 떨어지는 것을 방지함.
+ES6dptjsms 펼치기 연산자를 이용하면 apply를 적용하는 것보다 더욱 간편하게 작성 가능.
+
+call/apply 메서드는 명시적으로 별도의 this를 바인딩하면서 함수 또는 메서드를 실행하는 훌륭한 방법이나,
+this를 예측하기 어렵게 만들어 코드해석을 방해함.
+그럼에도 불구하고 ES5에서는 마땅한 대안이 없어 실무에서 매우 광범위하게 활용되고 있음. 
+
+3-2-4 bind 메서드
+bind 메서드는 ES5에서 추가된 기능, 즉시 호출하지 않고 넘겨 받은 this 및 인수들을 마탕으로 새로운 함수를 반환하기만 하는 메서드
+다시 새로운 함수를 호출할 때 인수를 넘기면 그 인수들은 기존 bind 메서드를 호출할 떄 전달했던 인수들의 뒤에 이어서 등록
+함수에 this를 미리 적용하는 것과 부분적용 함수를 구현하는 두가지 목적을 모두 지님
+
+[88] name 프로퍼티
+bind 메서드를 적용해서 새로만든 함수는 name 프로퍼티에 동사 bind의 수동태인 bound라는 접두어가 붙음.
+ㄴ 어떤 함수의 name 프로퍼티가 'bound xxx' 
+   >> 함수명이 xxx인 원본 함수에 bind 메서드를 적용한 새로운 함수 : 코드를 추적하기에 수월
+
+[89] 상위 컨텍스트의 this를 내부함수나 콜백 함수에 전달하기
+call, apply, 또는 bind 메서드를 이용해 
+메서드의 내부함수에서 메서드의 this를 그대로 바라보게 하기 위한 방법으로\
+ self 등의 변수를 활용한 우회법 보다 깔끔하게 처리가능
+
+ 또는 콜백 함수를 인자로 받는 함수나 메서드 중에서 기본적으로 콜백 함수 내에서의 this에 관여하는 함수 또는 메서드에 대해서도 bind 메서드를 이용시
+ this값을 사용자의 입맛에 맞게 바꿀 수 있음. 
+
+ 3-2-5 화살표 함수의 예외사항
+
+ES6에 새롭게 도입된 화살표 함수는 실핻 컨텍스트 생성시 this를 바인딩하는 과정이 제외됌.
+즉 이 함수 내부에는 this가 아예 없으며, 접근하고자 하면 스ㅗ프체인상 가장 가까운 this에 접근.
+
+예제 3-29 화살표 함수 내부에서의 this
+
+var obj = {
+    outer: function(){
+        console.log(this);
+        var innerfunc = () =>{
+            console.log(this);
+        };
+        inner Func();
+    }
+};
+obj.outer();
+
+별도의 변수로 this를 우회하거나 call/apply/bind 를 적용할 필요가 없어 더욱 간결하고 편리한 형태
+
+[91] 3-2-6 별도의 인자로 this를 받는 경우(콜백 함수 내에서의 this)
+
+콜백 함수를 인자로 받는 메서드 중 일부는 추가로 this로 지정할 객체 (thisArg)를 인자로 지정할 수 있는 경우가 있음.
+이러한 메서드의 thisArg 값을 지정하면 콜백 함수 내부에서 this 값을 원하는 대로 변경할 수 있음.
+이런 형태는 여러 내부 요소에 대해 같은 동작을 반복 수행해야 하는 배열 메서드에 많이 포진돼 있으며, 같은 이유로 ES6에서
+새로 등장한 Set, Map 등의 메서드에도 일부 존재. 
+
+thisArg를 인자로 받는 메서드는 꽤 많이 있음. 
+
+[92] 예제 3-31 콜백함수와 함께 thisArg를 인자로 받는 메서드
+Array.prototype.forEach(callback, [thisArg])
+Array.prototype.map(callback, [thisArg])
+Array.prototype.filter(callback, [thisArg])
+Array.prototype.some(callback, [thisArg])
+Array.prototype.every(callback, [thisArg])
+Array.prototype.find(callback, [thisArg])
+Array.prototype.findIndex(callback, [thisArg])
+Array.prototype.flatMap(callback, [thisArg])
+Set.prototype.from(arrayLike[, callback, [thisArg]])
+Map.prototype.forEach(callback, [thisArg])
+
+[93] 정리
+명시적 this 바인딩이 없는 한 늘 성립
+- 전역공간에서의 this는 전역객체를 참조
+- 어떤 함수를 메서드로서 호출한 경우 this는 메서드 호출 주체를 참조
+- 어떤 함수를 함수로서 호출한 경우 this는 전역객체를 참조. 메서드의 내부함수에서도 동일
+- 콜백 함수 내부에서의 this는 해당 콜백 함수의 제어권을 넘겨받은 함수가 정의한 바에 따르며, 정의하지 않은 경우에는 전역객체 참조
+- 생성자 함수에서의 this는 생성될 인스턴스를 참조
+
+명시적 ,this 바인딩
+- call, apply 메서드는 this를 명시적으로 지정하면서 함수 또는 메서드 호출
+- bind 메서드는 this 및 함수에 넘길 인수를 일부 지정해 새로운 함수를 만듦
+- 요소를 순회하면서 콜백 함수를 반복 호출하는 내용의 일부 메서드는 별도의 인자로 this를 받기도 함
